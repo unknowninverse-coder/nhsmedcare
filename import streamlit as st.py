@@ -39,7 +39,7 @@ with st.sidebar:
 if st.session_state.page == 'home':
     st.title("Get the Right Care, Right Away")
     st.markdown("""
-    A&E wait times are long.This is partly due to many people making trips to the A&E when this is not needed. To help combat this issue, this tool has been created to help you decide if you need to go to A&E, 
+    A&E wait times are long. This is partly due to many people making trips to the A&E when this is not needed. To help combat this issue, this tool has been created to help you decide if you need to go to A&E, 
     book a GP appointment, or visit a local pharmacy, ensuring you get the appropriate 
     care and help reduce pressure on the NHS.
     """)
@@ -94,10 +94,10 @@ elif st.session_state.page == 'questionnaire':
         st.subheader("1. Are you experiencing any emergency symptoms?")
         red_flag_chest_pain = st.checkbox("Severe chest pain or pressure")
         red_flag_breathing = st.checkbox("Severe difficulty breathing")
-        red_flag_stroke = st.checkbox("Signs of a stroke (e.g., face drooping, arm weakness)")
+        red_flag_stroke = st.checkbox("Signs of a stroke (e.g., face drooping, arm weakness, slurred speech)")
         red_flag_bleeding = st.checkbox("Heavy bleeding that won't stop")
-        red_flag_injury = st.checkbox("Severe head injury")
-        red_flag_seizures = st.checkbox("Seizures or fits")
+        red_flag_injury = st.checkbox("Severe head injury or suspected broken bone")
+        red_flag_seizures = st.checkbox("Seizures or fits (especially if new or prolonged)")
 
         st.subheader("2. How severe is your main symptom?")
         severity = st.radio(
@@ -115,23 +115,67 @@ elif st.session_state.page == 'questionnaire':
             label_visibility="collapsed"
         )
 
+        st.subheader("4. What other common symptoms are you experiencing (select all that apply)?")
+        other_symptoms = st.multiselect(
+            "Select all that apply:",
+            [
+                "Persistent headache (lasting several days, severe, or worsening)",
+                "Earache (severe, persistent, or with discharge)",
+                "Sore throat (severe, persistent, or difficulty swallowing)",
+                "Cough or cold symptoms (mild, improving, or typical of common cold)",
+                "Mild fever (below 38°C, manageable at home, no other severe symptoms)",
+                "Rash or skin irritation (mild, localised, not spreading rapidly or painful)",
+                "Mild upset stomach or diarrhea (short-lived, no signs of dehydration)",
+                "Muscle aches, minor sprains, or strains (manageable with over-the-counter pain relief)",
+                "Hay fever or allergies (seasonal, typical symptoms)",
+                "General fatigue or feeling unwell (not severe, no other concerning symptoms)",
+                "None of the above"
+            ],
+            default=[]
+        )
+
         submitted = st.form_submit_button("Get Guidance", use_container_width=True, type="primary")
 
         if submitted:
-            # --- DECISION LOGIC ---
+            # Determine if any red-flag symptoms are present
             red_flags_present = any([
-                red_flag_chest_pain, red_flag_breathing, red_flag_stroke, 
+                red_flag_chest_pain, red_flag_breathing, red_flag_stroke,
                 red_flag_bleeding, red_flag_injury, red_flag_seizures
             ])
 
-            # Rule 1: Any red-flag symptom immediately suggests A&E.
+            # Define symptoms that typically require a GP consultation
+            gp_tier_symptoms_list = [
+                "Persistent headache (lasting several days, severe, or worsening)",
+                "Earache (severe, persistent, or with discharge)",
+                "Sore throat (severe, persistent, or difficulty swallowing)",
+                # Add more symptoms here if they generally warrant a GP visit
+            ]
+
+            # Define symptoms that can often be managed by a pharmacist
+            pharmacy_tier_symptoms_list = [
+                "Cough or cold symptoms (mild, improving, or typical of common cold)",
+                "Mild fever (below 38°C, manageable at home, no other severe symptoms)",
+                "Rash or skin irritation (mild, localised, not spreading rapidly or painful)",
+                "Mild upset stomach or diarrhea (short-lived, no signs of dehydration)",
+                "Muscle aches, minor sprains, or strains (manageable with over-the-counter pain relief)",
+                "Hay fever or allergies (seasonal, typical symptoms)",
+                "General fatigue or feeling unwell (not severe, no other concerning symptoms)",
+                # Add more symptoms here that a pharmacist can help with
+            ]
+
+            # Check if any GP-tier symptom is selected from 'other_symptoms'
+            needs_gp_from_others = any(s in other_symptoms for s in gp_tier_symptoms_list)
+
+            # Check if any Pharmacy-tier symptom is selected from 'other_symptoms'
+            # Note: This is checked after GP criteria, so GP symptoms take precedence.
+            needs_pharmacy_from_others = any(s in other_symptoms for s in pharmacy_tier_symptoms_list)
+
+            # --- DECISION LOGIC ---
             if red_flags_present:
                 st.error("### Go to A&E immediately.\nYour symptoms may indicate a medical emergency. If it is life-threatening, please call 999.")
-            # Rule 2: Severe symptoms, or moderate symptoms for >3 days, suggest a GP.
-            elif severity == 'Severe' or (severity == 'Moderate' and duration == 'More than 3 days'):
-                st.info("### Book a GP appointment.\nYour symptoms are persistent or severe and should be checked by a doctor. Contact your GP surgery to make an appointment.")
-            # Rule 3: Otherwise, a pharmacy is the first port of call.
-            else:
+            elif severity == 'Severe' or (severity == 'Moderate' and duration == 'More than 3 days') or needs_gp_from_others:
+                st.info("### Book a GP appointment.\nYour symptoms are persistent, severe, or suggest a condition best checked by a doctor. Contact your GP surgery to make an appointment.")
+            else: # If no red flags, not severe/persistent enough for GP based on general severity, and no specific GP-tier symptoms from 'others'
                 st.success("### Visit your local pharmacy.\nA pharmacist can offer clinical advice and over-the-counter medicines for a range of minor illnesses.")
             
             st.warning("If you’re unsure, you can call **NHS 111** for advice or visit **111.nhs.uk**.")
@@ -146,4 +190,5 @@ For non-emergency advice, contact NHS 111.
 </div>
 
 """, unsafe_allow_html=True)
+
 
