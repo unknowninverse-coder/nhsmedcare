@@ -25,7 +25,7 @@ def go_to_questionnaire():
 
 # --- Sidebar Navigation ---
 with st.sidebar:
-    st.title("CareFinder UK")
+    st.title("CareFinder")
     st.button("Home", on_click=go_to_home, use_container_width=True, type="primary" if st.session_state.page == 'home' else "secondary")
     st.button("Guidance", on_click=go_to_guidance, use_container_width=True, type="primary" if st.session_state.page == 'guidance' else "secondary")
     st.button("Questionnaire", on_click=go_to_questionnaire, use_container_width=True, type="primary" if st.session_state.page == 'questionnaire' else "secondary")
@@ -146,3 +146,4 @@ For non-emergency advice, contact NHS 111.
 </div>
 
 """, unsafe_allow_html=True)
+
