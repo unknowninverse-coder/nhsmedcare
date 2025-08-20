@@ -2,7 +2,7 @@ import streamlit as st
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="CareFinder UK",
+    page_title="CareFinder ",
     page_icon="🏥",
     layout="centered",
     initial_sidebar_state="expanded"
@@ -39,7 +39,7 @@ with st.sidebar:
 if st.session_state.page == 'home':
     st.title("Get the Right Care, Right Away")
     st.markdown("""
-    A&E wait times are long. This tool helps you decide if you need to go to A&E, 
+    A&E wait times are long.This is partly due to many people making trips to the A&E when this is not needed. To help combat this issue, this tool has been created to help you decide if you need to go to A&E, 
     book a GP appointment, or visit a local pharmacy, ensuring you get the appropriate 
     care and help reduce pressure on the NHS.
     """)
@@ -144,4 +144,5 @@ This site provides general guidance only and is not a medical diagnosis.
 If symptoms are severe or life-threatening, call 999 or go to A&E. 
 For non-emergency advice, contact NHS 111.
 </div>
+
 """, unsafe_allow_html=True)
